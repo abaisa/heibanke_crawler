@@ -1,17 +1,25 @@
-# coding=utf-8
 import requests
+from bs4 import BeautifulSoup
+import pickle
 
-website1 = 'http://www.heibanke.com/accounts/login'
-website2 = 'http://www.heibanke.com/lesson/crawler_ex02'
-wrongNotify = '您输入的密码错误, 请重新输入'
+# 不知道密码位置是重0还是1开始
+res_array = [-1] * 101
+count = 0
 
-s = requests.Session()
-s.get(website1)     # 访问登录页面获取登录要用的csrftoken
-token1 = s.cookies['csrftoken']      # 保存csrftoken
-# 将csrftoekn存入字段csrfmiddlewaretoken
-dataWebsite1 = {'username': 'user',
-                'password': 'password',
-                'csrfmiddlewaretoken': token1
-                }
-html = s.post(website1, data=dataWebsite1).content.decode('utf-8')
-print(html)
+f = open(r'exampleHtml.txt', mode='rb')
+html = pickle.load(f)
+f.close()
+
+soup = BeautifulSoup(html, "lxml")
+
+page_res_set = soup.find_all('td')
+i = 2
+while i < 18:
+    pos = int(page_res_set[i].string)
+    key = int(page_res_set[i + 1].string)
+    if res_array[pos] == -1:
+       count += 1
+    if res_array[pos] != -1 and res_array[pos] != key:
+        print("ERROR !!!!")
+    res_array[pos] = key
+    i += 2
